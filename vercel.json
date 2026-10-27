@@ -1,6 +1,6 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "client/dist",
+  "buildCommand": "npm run build --workspace client -- --outDir ../dist --emptyOutDir",
+  "outputDirectory": "dist",
   "functions": {
     "api/[...path].js": {
       "maxDuration": 30
