@@ -21,7 +21,7 @@ const modules = [
   { to: "/procurement", title: "Purchase orders", description: "Create orders and coordinate status transitions.", icon: "▤", tone: "icon-blue" },
   { to: "/inventory", title: "Inventory", description: "Record warehouse stock and review reorder signals.", icon: "▣", tone: "icon-green" },
   { to: "/shipments", title: "Logistics", description: "Coordinate planned shipments and event timelines.", icon: "↗", tone: "icon-amber" },
-  { to: "/analytics", title: "Analytics", description: "Review summaries calculated from the sample records.", icon: "◷", tone: "icon-blue" },
+  { to: "/analytics", title: "Analytics", description: "Review summaries calculated from your organization records.", icon: "◷", tone: "icon-blue" },
   { to: "/algorithms", title: "DAA lab", description: "Explore five syllabus units through interactive algorithms.", icon: "⌘", tone: "icon-violet" }
 ];
 
@@ -35,7 +35,7 @@ export default function DashboardPage() {
       <PageHeader
         eyebrow="YOUR CONTROL TOWER"
         title={`Good to have you here, ${user?.fullName?.split(" ")[0]}.`}
-        description={`Your ${roleLabels[user?.role] ?? "team"} sample workspace for ${user?.organization?.name ?? "your organization"}.`}
+        description={`Your ${roleLabels[user?.role] ?? "team"} workspace for ${user?.organization?.name ?? "your organization"}.`}
         action={<Link className="button button-quiet" to="/organization">Organization profile →</Link>}
       />
       {analytics.error && <Notice tone="error">{analytics.error}</Notice>}
@@ -45,7 +45,7 @@ export default function DashboardPage() {
         <StatCard label="Warehouses" value={totals?.warehouses ?? "—"} note="Organization-owned locations" tone="violet" />
         <StatCard label="Low-stock items" value={totals?.lowStockProducts ?? "—"} note="Configured thresholds only" tone="amber" />
       </div>
-      <SectionCard title="Your operations workspace" description="Choose a workflow. Counts and activity are calculated from the editable sample records in this browser.">
+      <SectionCard title="Your operations workspace" description="Choose a workflow. Counts and activity are calculated from your organization's records.">
         <div className="module-grid">
           {modules.map((item) => (
             <Link className="module-card operational-module" to={item.to} key={item.to}>
@@ -59,8 +59,8 @@ export default function DashboardPage() {
       </SectionCard>
       <Notice>
         {analytics.data
-          ? `Illustrative demo metrics · calculated in this browser at ${new Date(analytics.data.generatedAt).toLocaleString()}. No live tracking is connected.`
-          : "Illustrative sample metrics only · no live tracking is connected."}
+          ? `Metrics calculated from organization records at ${new Date(analytics.data.generatedAt).toLocaleString()}. No live tracking is connected.`
+          : "Metrics are calculated from organization records. No live tracking is connected."}
       </Notice>
     </div>
   );

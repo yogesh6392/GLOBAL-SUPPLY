@@ -58,7 +58,7 @@ export default function InventoryPage() {
 
   return (
     <div className="workspace-page">
-      <PageHeader eyebrow="WAREHOUSE OPERATIONS · DEMO" title="Inventory & warehouses" description="Explore editable sample stock, record illustrative movements and review reorder suggestions in this browser." />
+      <PageHeader eyebrow="WAREHOUSE OPERATIONS" title="Inventory & warehouses" description="Track warehouse stock, record movements and review reorder suggestions." />
       {notice.error && <Notice tone="error">{notice.error}</Notice>}
       {notice.message && <Notice tone="success">{notice.message}</Notice>}
       <div className="split-layout">
@@ -75,7 +75,7 @@ export default function InventoryPage() {
             { key: "address", label: "Address" }
           ]} rows={warehouses.data?.warehouses ?? []} />
         </SectionCard>
-        <SectionCard title="Stock movement" description="This browser demo rejects outbound movements that would make sample stock negative.">
+        <SectionCard title="Stock movement" description="Outbound movements are rejected when they would make stock negative.">
           {canMoveStock && <form className="compact-form" onSubmit={recordMovement}>
             <label htmlFor="stock-warehouse">Warehouse</label><select id="stock-warehouse" value={moveForm.warehouse} onChange={(event) => setMoveForm({ ...moveForm, warehouse: event.target.value })} required><option value="">Choose warehouse</option>{(warehouses.data?.warehouses ?? []).map((warehouse) => <option value={warehouse._id} key={warehouse._id}>{warehouse.code} · {warehouse.name}</option>)}</select>
             <label htmlFor="stock-product">Product</label><select id="stock-product" value={moveForm.product} onChange={(event) => setMoveForm({ ...moveForm, product: event.target.value })} required><option value="">Choose product</option>{(products.data?.products ?? []).map((product) => <option value={product._id} key={product._id}>{product.sku} · {product.name}</option>)}</select>
@@ -86,7 +86,7 @@ export default function InventoryPage() {
           </form>}
         </SectionCard>
       </div>
-      <SectionCard title="Current stock" description="Sample quantities grouped by warehouse and product; changes remain in this browser.">
+      <SectionCard title="Current stock" description="Stock quantities grouped by warehouse and product.">
         <DataTable emptyMessage={inventory.loading ? "Loading inventory…" : "No stock has been recorded yet."} columns={[
           { key: "product", label: "Product", render: (row) => row.product?.name ?? "—" },
           { key: "sku", label: "SKU", render: (row) => row.product?.sku ?? "—" },

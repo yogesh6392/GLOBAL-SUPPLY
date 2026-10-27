@@ -28,9 +28,9 @@ export default function AnalyticsPage() {
   const totals = analytics.data?.totals;
   return (
     <div className="workspace-page">
-      <PageHeader eyebrow="ANALYTICS · BROWSER DEMO" title="Analytics & reports" description="Illustrative metrics are calculated from the editable sample records stored only in this browser." action={<button className="button button-quiet" onClick={downloadReport}>Export JSON report</button>} />
+      <PageHeader eyebrow="ORGANIZATION ANALYTICS" title="Analytics & reports" description="Metrics are calculated from your organization's operational records." action={<button className="button button-quiet" onClick={downloadReport}>Export JSON report</button>} />
       {analytics.error && <Notice tone="error">{analytics.error}</Notice>}
-      {analytics.data && <Notice>Data source: browser-only sample records. Report generated {new Date(analytics.data.generatedAt).toLocaleString()}.</Notice>}
+      {analytics.data && <Notice>Report generated {new Date(analytics.data.generatedAt).toLocaleString()}.</Notice>}
       <div className="stats-grid">
         <StatCard label="Purchase orders" value={totals?.purchaseOrders ?? "—"} note={analytics.loading ? "Loading records" : "Buyer or supplier participation"} />
         <StatCard label="Shipments" value={totals?.shipments ?? "—"} note="Participating shipment records" tone="green" />

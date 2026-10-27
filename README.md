@@ -51,9 +51,11 @@ If MongoDB is unavailable, the UI development server may still start, but API fe
 
 ## Deploy to Vercel
 
-The Vercel deployment is a **frontend-only presentation demo**. The root `vercel.json` builds the Vite client and serves the React routes. The preloaded demo workspaces and workflow changes are stored in the visitor's browser `localStorage`; no login service, API server, database, or Vercel environment variables are required. Keep the Vercel project **Root Directory** set to the repository root and use the root `npm run build` command. `/api/*` endpoints are not deployed.
+Vercel deploys the React client and the Express API as a serverless function. Configure `MONGODB_URI`, `JWT_SECRET`, and `CLIENT_ORIGIN` in the Vercel project's environment variables for **Production**, then redeploy. `CLIENT_ORIGIN` must be the exact origin of the deployed site, such as `https://your-project.vercel.app` (no trailing slash). Keep the Vercel project **Root Directory** set to the repository root and use the root `npm run build` command. The API is served at `/api/*`.
 
-On the login page, select a sample role and use the displayed shared demo password. Use **Reset demo** in a signed-in workspace to restore the sample records. This is for presentations only: browser-local sample data is not shared between visitors and provides no server-side authentication or persistence.
+Create user accounts through the registration page. MongoDB Atlas must allow connections from Vercel (Atlas network access commonly uses `0.0.0.0/0` for serverless deployments; use strong database credentials and least privilege). Do not put database credentials or JWT secrets in source code or `VITE_*` variables. For local API development, set `MONGODB_URI` and `JWT_SECRET` in `.env` as described above.
+
+The Vercel deployment requires an externally hosted MongoDB database; the serverless function does not include or provision a database. See [the deployment checklist](./docs/DEMO_CHECKLIST.md) for setup and verification steps.
 
 ## Environment variables
 

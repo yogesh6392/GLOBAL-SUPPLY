@@ -38,7 +38,7 @@ export default function RegisterPage() {
     <main className="auth-page">
       <div className="auth-header"><Link className="brand auth-brand" to="/"><span className="brand-mark">G</span><span>Global<span className="brand-light">Chain</span></span></Link><ThemeToggle /></div>
       <section className="auth-card register-card">
-        <div className="eyebrow">BROWSER-ONLY DEMO</div><h1>Create a sample workspace</h1><p className="auth-intro">This account and its password are saved only in this browser. Do not enter real or sensitive information.</p>
+        <div className="eyebrow">START COLLABORATING</div><h1>Create your workspace</h1><p className="auth-intro">Set up your organization to get started.</p>
         <form onSubmit={handleSubmit}>
           <label htmlFor="fullName">Your name</label><input id="fullName" autoComplete="name" required minLength="2" maxLength="100" value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} placeholder="Alex Morgan" />
           <label htmlFor="organizationName">Organization name</label><input id="organizationName" autoComplete="organization" required minLength="2" maxLength="120" value={form.organizationName} onChange={(event) => setForm({ ...form, organizationName: event.target.value })} placeholder="Northstar Manufacturing" />

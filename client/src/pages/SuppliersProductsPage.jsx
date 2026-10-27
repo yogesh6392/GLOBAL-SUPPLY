@@ -73,7 +73,7 @@ export default function SuppliersProductsPage() {
 
   return (
     <div className="workspace-page">
-      <PageHeader eyebrow="COLLABORATION · DEMO" title="Suppliers & products" description="Explore sample supplier relationships and product records. Any additions stay in this browser." />
+      <PageHeader eyebrow="COLLABORATION" title="Suppliers & products" description="Manage supplier relationships and product records for your organization." />
       <div className="split-layout">
         <SectionCard title="Supplier directory" description="Supplier organizations are explicit participants; private records stay within your organization.">
           {supplierError && <Notice tone="error">{supplierError}</Notice>}

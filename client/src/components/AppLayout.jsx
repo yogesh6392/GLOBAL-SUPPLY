@@ -3,7 +3,6 @@ import { useAuth } from "../AuthContext";
 import { getApiError } from "../api";
 import NotificationCenter from "./NotificationCenter";
 import ThemeToggle from "./ThemeToggle";
-import { resetDemoData } from "../demoApi";
 
 const navigationGroups = [
   {
@@ -51,13 +50,6 @@ export default function AppLayout() {
     }
   }
 
-  function handleResetDemo() {
-    if (!window.confirm("Reset all browser-only sample data and sign out?")) return;
-    resetDemoData();
-    navigate("/login");
-    window.location.reload();
-  }
-
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Workspace sidebar">
@@ -98,7 +90,6 @@ export default function AppLayout() {
         </div>
       </aside>
       <div className="main-column">
-        <div className="demo-mode-banner"><strong>Presentation demo</strong><span>Sample data · browser only · no backend or database</span><button type="button" onClick={handleResetDemo}>Reset demo</button></div>
         <header className="topbar">
           <span className="breadcrumb">Workspace <span>/</span> {pageNames[location.pathname] ?? "Overview"}</span>
           <div className="topbar-right">

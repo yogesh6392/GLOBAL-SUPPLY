@@ -72,7 +72,7 @@ export default function ProcurementPage() {
 
   return (
     <div className="workspace-page">
-      <PageHeader eyebrow="PROCUREMENT · DEMO" title="Purchase orders" description="Create sample orders and demonstrate buyer/supplier workflow steps. Changes stay in this browser." />
+      <PageHeader eyebrow="PROCUREMENT" title="Purchase orders" description="Create orders and coordinate buyer/supplier workflow steps." />
       {error && <Notice tone="error">{error}</Notice>}
       {message && <Notice tone="success">{message}</Notice>}
       {canCreate && <SectionCard title="Create purchase order" description="Orders start as drafts and are submitted through a role-checked workflow.">
