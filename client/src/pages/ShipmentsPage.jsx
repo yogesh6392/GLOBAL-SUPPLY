@@ -83,7 +83,7 @@ export default function ShipmentsPage() {
 
   return (
     <div className="workspace-page">
-      <PageHeader eyebrow="LOGISTICS" title="Shipments" description="Coordinate shipment status and review recorded event timelines. This is not live GPS tracking." />
+      <PageHeader eyebrow="LOGISTICS · DEMO" title="Shipments" description="Explore sample shipments and update their illustrative event timelines. This is not live GPS tracking." />
       {notice.error && <Notice tone="error">{notice.error}</Notice>}
       {notice.message && <Notice tone="success">{notice.message}</Notice>}
       {canCreate && <SectionCard title="Create shipment" description="A supplier must confirm the purchase order before dispatch planning begins.">

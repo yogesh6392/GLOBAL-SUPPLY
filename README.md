@@ -51,15 +51,9 @@ If MongoDB is unavailable, the UI development server may still start, but API fe
 
 ## Deploy to Vercel
 
-The root `vercel.json` builds the Vite client and routes `/api/*` requests to a Vercel serverless handler. Keep the Vercel project **Root Directory** set to the repository root so it can build both workspaces and find the API function. Add these environment variables in the Vercel project settings for each deployment environment:
+The Vercel deployment is a **frontend-only presentation demo**. The root `vercel.json` builds the Vite client and serves the React routes. The preloaded demo workspaces and workflow changes are stored in the visitor's browser `localStorage`; no login service, API server, database, or Vercel environment variables are required. Keep the Vercel project **Root Directory** set to the repository root and use the root `npm run build` command. `/api/*` endpoints are not deployed.
 
-| Variable | Value |
-|---|---|
-| `MONGODB_URI` | A MongoDB Atlas connection URI for a database reachable from Vercel |
-| `JWT_SECRET` | A unique random secret of at least 32 characters |
-| `CLIENT_ORIGIN` | The deployed frontend origin, such as `https://your-project.vercel.app` |
-
-Use your database provider's network-access settings to allow connections from the deployment. Keep credentials inside Vercel's encrypted environment-variable settings; never put them in the repository or a `VITE_` variable. Redeploy after adding or changing environment variables. Check `https://your-project.vercel.app/api/health` for database readiness.
+On the login page, select a sample role and use the displayed shared demo password. Use **Reset demo** in a signed-in workspace to restore the sample records. This is for presentations only: browser-local sample data is not shared between visitors and provides no server-side authentication or persistence.
 
 ## Environment variables
 

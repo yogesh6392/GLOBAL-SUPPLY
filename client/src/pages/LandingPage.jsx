@@ -21,7 +21,7 @@ export default function LandingPage() {
             <h1>Move your supply chain forward, <em>together.</em></h1>
             <p className="hero-description">A shared operations workspace for the people and organizations that keep goods moving—from supplier coordination to the last mile.</p>
             <div className="hero-actions"><Link className="button button-primary button-large" to="/register">Get started <span aria-hidden="true">→</span></Link><Link className="text-link" to="/login">I already have an account</Link></div>
-            <div className="hero-footnote"><span className="secure-icon" aria-hidden="true">✓</span> A collaborative workspace for your organization</div>
+            <div className="hero-footnote"><span className="secure-icon" aria-hidden="true">✓</span> Teacher-ready presentation demo · no backend required</div>
           </div>
           <div className="hero-visual" aria-label="Illustration of connected supply chain locations">
             <div className="visual-glow"></div>
@@ -38,7 +38,7 @@ export default function LandingPage() {
           <div className="feature-grid">{features.map(([number, title, description]) => <article className="feature-card" key={number}><span className="feature-number">{number}</span><h3>{title}</h3><p>{description}</p></article>)}</div>
         </section>
       </main>
-      <footer className="landing-footer"><span>GlobalChain <span>·</span> Intelligent Global Supply Chain Collaboration Platform</span><span>College project demonstration</span></footer>
+      <footer className="landing-footer"><span>GlobalChain <span>·</span> Intelligent Global Supply Chain Collaboration Platform</span><span>Illustrative browser-only sample data</span></footer>
     </div>
   );
 }

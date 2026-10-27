@@ -1,13 +1,7 @@
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: "/api",
-  withCredentials: true,
-  headers: { "Content-Type": "application/json" }
-});
+import { demoApi } from "./demoApi";
 
 export function getApiError(error) {
-  return error.response?.data?.message ?? "The service could not be reached. Please try again.";
+  return error.response?.data?.message ?? "The demonstration action could not be completed.";
 }
 
-export default api;
+export default demoApi;
