@@ -51,7 +51,9 @@ If MongoDB is unavailable, the UI development server may still start, but API fe
 
 ## Deploy to Vercel
 
-Vercel deploys the React client and the Express API as a serverless function. Configure `MONGODB_URI`, `JWT_SECRET`, and `CLIENT_ORIGIN` in the Vercel project's environment variables for **Production**, then redeploy. `CLIENT_ORIGIN` must be the exact origin of the deployed site, such as `https://your-project.vercel.app` (no trailing slash). Keep the Vercel project **Root Directory** set to the repository root and use the root `npm run build` command. The API is served at `/api/*`.
+Vercel deploys the React client and the Express API as a serverless function. In **Project Settings → Build and Deployment**, set **Root Directory** to `.` (the repository root), not `client`; this is required so Vercel can include the root `api/` function and build output. Leave the root `vercel.json` build settings enabled: build command `npm run build`, output directory `dist`. The Vite workspace writes its production files to the repository-root `dist/` directory.
+
+Configure `MONGODB_URI`, `JWT_SECRET`, and `CLIENT_ORIGIN` in the Vercel project's environment variables for **Production**, then redeploy. `CLIENT_ORIGIN` must be the exact origin of the deployed site, such as `https://your-project.vercel.app` (no trailing slash). The API is served at `/api/*`.
 
 Create user accounts through the registration page. MongoDB Atlas must allow connections from Vercel (Atlas network access commonly uses `0.0.0.0/0` for serverless deployments; use strong database credentials and least privilege). Do not put database credentials or JWT secrets in source code or `VITE_*` variables. For local API development, set `MONGODB_URI` and `JWT_SECRET` in `.env` as described above.
 

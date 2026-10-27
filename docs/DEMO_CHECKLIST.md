@@ -5,7 +5,8 @@
 - [ ] Install Node.js 20+ and MongoDB; copy `.env.example` to `.env` and set a random JWT secret.
 - [ ] Create a MongoDB Atlas database and database user. Configure its network access to permit Vercel serverless connections.
 - [ ] Add `MONGODB_URI`, `JWT_SECRET` (unique, at least 32 characters), and `CLIENT_ORIGIN` (the exact deployed site origin) to Vercel Production environment variables. Never use `VITE_` prefixes for secrets.
-- [ ] Set the Vercel project root to the repository root; deploy `main` and verify `/api/health` reports a connected database.
+- [ ] Set the Vercel project Root Directory to `.` (repository root), not `client`; use the root `vercel.json` build command and `dist` output directory.
+- [ ] Deploy `main` and verify `/api/health` reports a connected database.
 - [ ] Register a normal account, sign in, and verify organization data persists after reloading or signing in from another browser.
 - [ ] For an administrator, run the protected one-time `admin:create` script locally against the hosted MongoDB. Do not expose bootstrap credentials in the client or commit them.
 - [ ] Run `npm install`, `npm test`, and `npm run build`.
