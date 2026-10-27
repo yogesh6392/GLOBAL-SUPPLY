@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build --workspace client -- --outDir ../dist --emptyOutDir",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "functions": {
     "api/[...path].js": {
@@ -8,7 +8,11 @@
   },
   "rewrites": [
     {
-      "source": "/:path*",
+      "source": "/api/(.*)",
+      "destination": "/api/[...path]"
+    },
+    {
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]

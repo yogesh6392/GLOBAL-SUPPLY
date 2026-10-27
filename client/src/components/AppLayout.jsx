@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-import { getApiError } from "../api";
+import { getApiError, isDemoSessionActive } from "../api";
+import { resetDemoData } from "../demoApi";
 import NotificationCenter from "./NotificationCenter";
 import ThemeToggle from "./ThemeToggle";
 
@@ -40,6 +41,7 @@ export default function AppLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const isDemo = isDemoSessionActive();
 
   async function handleLogout() {
     try {
@@ -48,6 +50,13 @@ export default function AppLayout() {
     } catch (error) {
       window.alert(getApiError(error));
     }
+  }
+
+  function handleResetDemo() {
+    if (!window.confirm("Reset all browser sample data and sign out?")) return;
+    resetDemoData();
+    navigate("/login");
+    window.location.reload();
   }
 
   return (
@@ -90,6 +99,13 @@ export default function AppLayout() {
         </div>
       </aside>
       <div className="main-column">
+        {isDemo && (
+          <div className="demo-mode-banner">
+            <strong>Active Demo Mode</strong>
+            <span>Sample data · Browser-only · Fast evaluation</span>
+            <button type="button" onClick={handleResetDemo}>Reset demo data</button>
+          </div>
+        )}
         <header className="topbar">
           <span className="breadcrumb">Workspace <span>/</span> {pageNames[location.pathname] ?? "Overview"}</span>
           <div className="topbar-right">

@@ -980,6 +980,73 @@ html[data-theme="dark"] .session-notice { border-color: #60403f; color: #efb6b1;
   .auth-header { margin-bottom: 22px; }
 }
 
+.demo-access-panel {
+  display: grid;
+  gap: 8px;
+  margin: 20px 0 16px;
+  padding: 14px;
+  border: 1px solid #dce7f5;
+  border-radius: 9px;
+  background: #f7faff;
+}
+.demo-access-panel > strong { color: #233d5b; font-size: 12px; }
+.demo-access-panel > span { color: #61758d; font-size: 11px; }
+.demo-access-panel code {
+  padding: 2px 6px;
+  border: 1px solid #dce5f0;
+  border-radius: 4px;
+  color: #264d84;
+  background: #fff;
+  font-size: 11px;
+}
+.demo-account-list { display: grid; gap: 6px; margin-top: 3px; }
+.demo-account-button {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 9px 31px 9px 10px;
+  border: 1px solid #e0e8f1;
+  border-radius: 7px;
+  color: #29415e;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+}
+.demo-account-button:hover:not(:disabled) { border-color: #9db8dc; background: #fafdff; }
+.demo-account-button:disabled { cursor: progress; opacity: .65; }
+.demo-account-button > span { font-size: 11px; font-weight: 700; }
+.demo-account-button > small { overflow-wrap: anywhere; color: #78899d; font-size: 9px; }
+.demo-account-button > b { position: absolute; top: 50%; right: 12px; color: #3976e6; transform: translateY(-50%); }
+.demo-storage-note { color: #75869a; font-size: 9px; line-height: 1.5; }
+.demo-manual-login { margin-top: 12px; }
+.demo-manual-login > summary { color: #60738b; cursor: pointer; font-size: 11px; }
+.demo-manual-login form { margin-top: 10px; }
+.demo-mode-banner {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-bottom: 1px solid #cfe0f5;
+  color: #3e5878;
+  background: #edf5ff;
+  font-size: 10px;
+}
+.demo-mode-banner strong { color: #245caa; }
+.demo-mode-banner button {
+  margin-left: 5px;
+  padding: 2px 7px;
+  border: 1px solid #c6d9f1;
+  border-radius: 5px;
+  color: #355a87;
+  background: #fff;
+  cursor: pointer;
+  font-size: 9px;
+}
+.demo-mode-banner button:hover { border-color: #8eadd4; }
+
 :root { background: #f7f9fc; }
 body { background: transparent; }
 #root { position: relative; z-index: 1; min-height: 100vh; }
@@ -1008,3 +1075,20 @@ html[data-theme="dark"] body,
 html[data-theme="dark"] .landing,
 html[data-theme="dark"] .auth-page,
 html[data-theme="dark"] .app-shell { background: transparent; }
+html[data-theme="dark"] .demo-access-panel { border-color: #35485f; background: #172433; }
+html[data-theme="dark"] .demo-access-panel > strong { color: #e0e9f4; }
+html[data-theme="dark"] .demo-access-panel > span,
+html[data-theme="dark"] .demo-storage-note,
+html[data-theme="dark"] .demo-manual-login > summary { color: #a4b2c2; }
+html[data-theme="dark"] .demo-access-panel code,
+html[data-theme="dark"] .demo-account-button { border-color: #374a60; color: #d3deea; background: #1c2a3a; }
+html[data-theme="dark"] .demo-account-button:hover:not(:disabled) { border-color: #627c9e; background: #24364b; }
+html[data-theme="dark"] .demo-account-button > small { color: #a4b2c2; }
+html[data-theme="dark"] .demo-mode-banner { border-color: #2d4561; color: #c0d0e3; background: #17283b; }
+html[data-theme="dark"] .demo-mode-banner strong { color: #9bbdff; }
+html[data-theme="dark"] .demo-mode-banner button { border-color: #3b526e; color: #c5d5e8; background: #203148; }
+
+@media (max-width: 560px) {
+  .demo-mode-banner { flex-wrap: wrap; gap: 3px 7px; padding: 6px 9px; font-size: 9px; }
+  .demo-mode-banner button { margin-left: 0; }
+}

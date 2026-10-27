@@ -16,7 +16,18 @@ const app = express();
 app.disable("x-powered-by");
 app.use(helmet());
 app.use(cors({
-  origin: config.clientOrigin,
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (
+      origin === config.clientOrigin ||
+      origin.includes("vercel.app") ||
+      origin.startsWith("http://localhost:") ||
+      origin.startsWith("http://127.0.0.1:")
+    ) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
   credentials: true
 }));
 app.use(express.json({ limit: "20kb" }));

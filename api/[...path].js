@@ -7,8 +7,17 @@ let databaseConnection;
 
 async function ensureDatabaseConnection() {
   if (mongoose.connection.readyState === 1) return;
+
+  const mongoUri = process.env.MONGODB_URI || getConfig().mongoUri;
+  const isLocalMongo = mongoUri.includes("127.0.0.1") || mongoUri.includes("localhost");
+
+  // On Vercel, localhost is never reachable
+  if (process.env.VERCEL && isLocalMongo) {
+    throw new Error("MONGODB_URI is not set to a remote MongoDB Atlas URI. Localhost is unavailable in serverless.");
+  }
+
   if (!databaseConnection) {
-    databaseConnection = connectDatabase(getConfig().mongoUri).catch((error) => {
+    databaseConnection = connectDatabase(mongoUri).catch((error) => {
       databaseConnection = null;
       throw error;
     });
@@ -20,10 +29,10 @@ export default async function handler(request, response) {
   try {
     await ensureDatabaseConnection();
   } catch (error) {
-    console.error("The Vercel API could not connect to MongoDB.", error);
+    console.warn("The Vercel API could not connect to MongoDB:", error.message);
     return response.status(503).json({
       success: false,
-      message: "The API database is unavailable. Check the deployment database configuration."
+      message: "The API database is unavailable. Set MONGODB_URI in Vercel or use Demo Mode."
     });
   }
 
