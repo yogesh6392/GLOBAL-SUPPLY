@@ -11,7 +11,6 @@ import {
 } from "../models/Operations.js";
 import HttpError from "../utils/HttpError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { runAlgorithm, algorithmCatalog } from "../algorithms/index.js";
 
 function organizationId(request) {
   return request.user.organization._id ?? request.user.organization.id;
@@ -247,11 +246,32 @@ export const optimizeRoute = asyncHandler(async (request, response) => {
   ) {
     throw new HttpError(400, "Cost per distance must be a non-negative number.");
   }
-  const result = runAlgorithm("graph.dijkstra", {
-    graph: demoRouteNetwork,
-    source: origin
-  }).result;
-  const route = result.paths.find((path) => path.vertex === destination);
+  function shortestPath(vertices, edges, start, end) {
+    const distances = new Map(vertices.map((v) => [v, Infinity]));
+    const paths = new Map(vertices.map((v) => [v, []]));
+    const unvisited = new Set(vertices);
+    distances.set(start, 0);
+    paths.set(start, [start]);
+    while (unvisited.size) {
+      let current = null;
+      for (const node of unvisited) {
+        if (current === null || distances.get(node) < distances.get(current)) current = node;
+      }
+      if (current === null || distances.get(current) === Infinity) break;
+      unvisited.delete(current);
+      for (const [from, to, weight] of edges) {
+        const neighbor = from === current ? to : to === current ? from : null;
+        if (neighbor === null || !unvisited.has(neighbor)) continue;
+        const candidate = distances.get(current) + weight;
+        if (candidate < distances.get(neighbor)) {
+          distances.set(neighbor, candidate);
+          paths.set(neighbor, [...paths.get(current), neighbor]);
+        }
+      }
+    }
+    return { path: paths.get(end) || [], distance: distances.get(end) };
+  }
+  const route = shortestPath(demoRouteNetwork.vertices, demoRouteNetwork.edges, origin, destination);
   respond(response, 200, "Route calculated from documented sample-network edge weights.", {
     source: "illustrative_demo_network",
     networkAssumption: "Edge weights are sample distances, not live road distances or carrier quotes.",

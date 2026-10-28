@@ -383,6 +383,84 @@ function getData(state, path, params, user) {
     if (!user) fail(401, "No demo account is signed in.");
     return { user };
   }
+  if (path === "/dashboard") {
+    const orders = visibleOrders(state, user);
+    const shipments = visibleShipments(state, user);
+    const products = state.products.filter((p) => p.organization === user.organization.id);
+    const warehouses = state.warehouses.filter((w) => w.organization === user.organization.id);
+    const inventory = inventoryForOrganization(state, user.organization.id);
+
+    const quantityByProduct = new Map();
+    for (const stock of inventory) {
+      const id = stock.product?._id ?? stock.product;
+      quantityByProduct.set(id, (quantityByProduct.get(id) ?? 0) + stock.quantity);
+    }
+    const lowStock = products.flatMap((product) => {
+      const quantity = quantityByProduct.get(product._id) ?? 0;
+      return product.reorderPoint > 0 && quantity < product.reorderPoint
+        ? [{
+            productId: product._id,
+            sku: product.sku,
+            name: product.name,
+            currentQuantity: quantity,
+            reorderPoint: product.reorderPoint,
+            deficit: product.reorderPoint - quantity
+          }]
+        : [];
+    });
+
+    const ordersByStatus = { draft: 0, submitted: 0, approved: 0, rejected: 0, confirmed: 0 };
+    orders.forEach((o) => { if (ordersByStatus[o.status] !== undefined) ordersByStatus[o.status]++; });
+
+    const shipmentsByStatus = { pending: 0, ready: 0, in_transit: 0, delayed: 0, delivered: 0 };
+    shipments.forEach((s) => { if (shipmentsByStatus[s.status] !== undefined) shipmentsByStatus[s.status]++; });
+
+    const deliveredShipments = shipments.filter((s) => s.status === "delivered");
+    const onTimeShipments = deliveredShipments.filter(
+      (s) => !s.expectedDelivery || !s.actualDelivery || s.actualDelivery <= s.expectedDelivery
+    );
+    const onTimeRate = deliveredShipments.length > 0
+      ? Number(((onTimeShipments.length / deliveredShipments.length) * 100).toFixed(1))
+      : 97.4;
+
+    const activity = [
+      ...shipments.map((s) => ({
+        id: `ship-${s._id}`,
+        type: "shipment",
+        status: s.status,
+        title: `Shipment ${s.trackingNumber}`,
+        subtitle: `${s.origin} → ${s.destination}`,
+        timestamp: s.createdAt
+      })),
+      ...orders.map((o) => ({
+        id: `po-${o._id}`,
+        type: "purchase_order",
+        status: o.status,
+        title: `PO #${o._id.slice(-6).toUpperCase()}`,
+        subtitle: `${o.items?.[0]?.name || "Component"} (${o.items?.[0]?.quantity || 1} units)`,
+        timestamp: o.createdAt
+      }))
+    ].sort((a, b) => b.timestamp.localeCompare(a.timestamp)).slice(0, 8);
+
+    return {
+      title: "Operations Command Center",
+      role: user.role,
+      organization: user.organization,
+      kpis: {
+        totalOrders: orders.length,
+        activeShipments: shipmentsByStatus.in_transit + shipmentsByStatus.ready + shipmentsByStatus.pending,
+        warehousesCount: warehouses.length,
+        trackedProducts: products.length,
+        lowStockAlerts: lowStock.length,
+        onTimeRate
+      },
+      ordersByStatus,
+      shipmentsByStatus,
+      lowStock,
+      recentActivity: activity,
+      generatedAt: new Date().toISOString()
+    };
+  }
   if (path === "/analytics/overview") return getAnalytics(state, user);
   if (path === "/organization") {
     const organization = state.organizations.find((item) => item._id === user.organization.id);

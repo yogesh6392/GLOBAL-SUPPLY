@@ -1,9 +1,7 @@
 import { Router } from "express";
 import {
-  executeAlgorithm,
   getDemoRouteNetwork,
   getAdminUsers,
-  getAlgorithmCatalog,
   getAnalyticsOverview,
   getOrganization,
   listPartnerOrganizations,
@@ -31,8 +29,6 @@ router.delete("/organization/invitations/:id", revokeInvitation);
 router.get("/partners/:role", listPartnerOrganizations);
 router.get("/admin/users", getAdminUsers);
 router.get("/analytics/overview", getAnalyticsOverview);
-router.get("/algorithms", getAlgorithmCatalog);
-router.post("/algorithms/run", executeAlgorithm);
 router.get("/optimization/network", getDemoRouteNetwork);
 router.post("/optimization/route", optimizeRoute);
 
