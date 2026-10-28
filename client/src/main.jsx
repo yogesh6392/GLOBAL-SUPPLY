@@ -9,7 +9,6 @@ import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AdminPage from "./pages/AdminPage";
-import AlgorithmLabPage from "./pages/AlgorithmLabPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import InventoryPage from "./pages/InventoryPage";
 import OrganizationPage from "./pages/OrganizationPage";
@@ -64,7 +63,6 @@ ReactDOM.createRoot(document.getElementById("root")).render(
                 <Route path="/shipments" element={<ShipmentsPage />} />
                 <Route path="/optimization" element={<RouteOptimizationPage />} />
                 <Route path="/analytics" element={<AnalyticsPage />} />
-                <Route path="/algorithms" element={<AlgorithmLabPage />} />
                 <Route path="/admin" element={<AdminPage />} />
               </Route>
             </Route>

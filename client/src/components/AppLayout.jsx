@@ -20,8 +20,7 @@ const navigationGroups = [
     label: "INTELLIGENCE",
     items: [
       { to: "/optimization", label: "Route optimization", icon: "⌖", roles: ["admin", "manufacturer", "logistics_provider"] },
-      { to: "/analytics", label: "Analytics & reports", icon: "◷", roles: null },
-      { to: "/algorithms", label: "DAA algorithm lab", icon: "⌘", roles: null }
+      { to: "/analytics", label: "Analytics & reports", icon: "◷", roles: null }
     ]
   },
   {

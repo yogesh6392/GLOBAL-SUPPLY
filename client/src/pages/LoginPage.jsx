@@ -81,7 +81,7 @@ export default function LoginPage() {
             ))}
           </div>
           <small className="demo-storage-note">
-            Pre-configured with realistic supplier catalogs, purchase orders, warehouses, stock, shipments & DAA algorithms.
+            Pre-configured with realistic supplier catalogs, purchase orders, warehouses, stock & shipments.
           </small>
         </div>
 

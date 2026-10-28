@@ -22,7 +22,7 @@ const modules = [
   { to: "/inventory", title: "Inventory", description: "Record warehouse stock and review reorder signals.", icon: "▣", tone: "icon-green" },
   { to: "/shipments", title: "Logistics", description: "Coordinate planned shipments and event timelines.", icon: "↗", tone: "icon-amber" },
   { to: "/analytics", title: "Analytics", description: "Review summaries calculated from your organization records.", icon: "◷", tone: "icon-blue" },
-  { to: "/algorithms", title: "DAA lab", description: "Explore five syllabus units through interactive algorithms.", icon: "⌘", tone: "icon-violet" }
+  { to: "/optimization", title: "Route optimization", description: "Calculate optimal delivery paths and cost estimates across locations.", icon: "⌖", tone: "icon-violet" }
 ];
 
 export default function DashboardPage() {

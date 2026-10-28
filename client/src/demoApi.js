@@ -310,14 +310,6 @@ function getAnalytics(state, user) {
   };
 }
 
-const algorithms = {
-  "heap.sort": { unit: "unit-1", description: "Heap sort on an editable sample array.", complexity: "O(n log n) time.", sampleInput: [5, 1, 4, 2], resultShape: "number[] in ascending order" },
-  "graph.dijkstra": { unit: "unit-2", description: "Dijkstra shortest paths for non-negative weighted edges.", complexity: "O((V + E) log V) with a priority queue.", sampleInput: { graph: { vertices: ["A", "B", "C"], edges: [["A", "B", 2], ["B", "C", 4]] }, source: "A" }, resultShape: "{ source, paths }" },
-  "dp.knapsack01": { unit: "unit-3", description: "0/1 knapsack dynamic programming with a sample capacity.", complexity: "O(nW) time and space.", sampleInput: { weights: [2, 3, 4], values: [4, 5, 7], capacity: 6 }, resultShape: "{ maxValue, selectedItems }" },
-  "backtracking.nQueens": { unit: "unit-4", description: "Backtracking search for one N-Queens board.", complexity: "O(n!) worst-case search.", sampleInput: { n: 4 }, resultShape: "{ size, board }" },
-  "advanced.heapComparison": { unit: "unit-5", description: "Compare sorted extraction from two illustrative heap variants.", complexity: "O(n log n) total extraction time.", sampleInput: { values: [9, 2, 7, 1] }, resultShape: "{ inputSize, binomial, fibonacci }" }
-};
-
 const routeVertices = ["Central Hub", "North Warehouse", "East Distribution Center", "South Port"];
 const routeEdges = [
   ["Central Hub", "North Warehouse", 18],
@@ -354,52 +346,36 @@ function shortestPaths(vertices, edges, source) {
   return { distances, paths };
 }
 
-function runAlgorithm(id, input) {
-  if (id === "heap.sort" && Array.isArray(input) && input.every(Number.isFinite)) {
-    return [...input].sort((a, b) => a - b);
+export function getDemoRouteNetwork() {
+  return {
+    source: "illustrative_demo_network",
+    networkAssumption: "Edge weights are sample distances, not live road distances or carrier quotes.",
+    vertices: routeVertices,
+    edges: routeEdges.map(([from, to, distance]) => ({ from, to, distance }))
+  };
+}
+
+export function optimizeDemoRoute({ origin, destination, costPerDistance = 1 }) {
+  if (!routeVertices.includes(origin) || !routeVertices.includes(destination)) {
+    fail(400, "Choose an origin and destination from the sample network.");
   }
-  if (id === "graph.dijkstra" && input?.graph?.vertices?.includes(input.source)) {
-    const { distances, paths } = shortestPaths(input.graph.vertices, input.graph.edges ?? [], input.source);
-    return { source: input.source, paths: input.graph.vertices.map((vertex) => ({ vertex, distance: Number.isFinite(distances.get(vertex)) ? distances.get(vertex) : null, path: paths.get(vertex) })) };
+  if (typeof costPerDistance !== "number" || !Number.isFinite(costPerDistance) || costPerDistance < 0) {
+    fail(400, "Cost per distance must be a non-negative number.");
   }
-  if (id === "dp.knapsack01" && Array.isArray(input.weights) && Array.isArray(input.values) && input.weights.length === input.values.length) {
-    const capacity = Math.max(0, Math.floor(input.capacity));
-    const table = Array.from({ length: input.weights.length + 1 }, () => Array(capacity + 1).fill(0));
-    for (let i = 1; i <= input.weights.length; i += 1) {
-      for (let w = 0; w <= capacity; w += 1) {
-        table[i][w] = input.weights[i - 1] <= w
-          ? Math.max(table[i - 1][w], table[i - 1][w - input.weights[i - 1]] + input.values[i - 1])
-          : table[i - 1][w];
-      }
-    }
-    const selectedItems = [];
-    let w = capacity;
-    for (let i = input.weights.length; i > 0; i -= 1) {
-      if (table[i][w] !== table[i - 1][w]) {
-        selectedItems.push(i - 1);
-        w -= input.weights[i - 1];
-      }
-    }
-    return { maxValue: table[input.weights.length][capacity], selectedItems: selectedItems.reverse() };
-  }
-  if (id === "backtracking.nQueens" && Number.isInteger(input?.n) && input.n >= 1 && input.n <= 10) {
-    const columns = Array(input.n).fill(-1);
-    const place = (row) => {
-      if (row === input.n) return true;
-      for (let column = 0; column < input.n; column += 1) {
-        if (columns.slice(0, row).some((placed, previous) => placed === column || Math.abs(placed - column) === row - previous)) continue;
-        columns[row] = column;
-        if (place(row + 1)) return true;
-      }
-      return false;
-    };
-    return { size: input.n, board: place(0) ? columns.map((column) => ".".repeat(column) + "Q" + ".".repeat(input.n - column - 1)) : null };
-  }
-  if (id === "advanced.heapComparison" && Array.isArray(input?.values) && input.values.every(Number.isFinite)) {
-    const extractedAscending = [...input.values].sort((a, b) => a - b);
-    return { inputSize: input.values.length, binomial: { minimum: extractedAscending[0] ?? null, extractedAscending }, fibonacci: { minimum: extractedAscending[0] ?? null, extractedAscending } };
-  }
-  fail(400, "Check the selected demonstration and enter a valid sample input.");
+
+  const result = shortestPaths(routeVertices, routeEdges, origin);
+  const distance = result.distances.get(destination);
+  return {
+    ...getDemoRouteNetwork(),
+    origin,
+    destination,
+    route: result.paths.get(destination),
+    distance: Number.isFinite(distance) ? distance : null,
+    estimatedCost: Number.isFinite(distance) ? Number((distance * costPerDistance).toFixed(2)) : null,
+    costPerDistance,
+    unit: "sample distance units",
+    complexity: "Dijkstra: O((V + E) log V) using the demonstrated priority-queue approach."
+  };
 }
 
 function getData(state, path, params, user) {
@@ -482,14 +458,8 @@ function getData(state, path, params, user) {
     const page = paginate(rows, params);
     return { shipments: page.rows, pagination: page.pagination };
   }
-  if (path === "/algorithms") return { algorithms };
   if (path === "/optimization/network") {
-    return {
-      source: "illustrative_demo_network",
-      networkAssumption: "Edge weights are sample distances, not live road distances or carrier quotes.",
-      vertices: routeVertices,
-      edges: routeEdges.map(([from, to, distance]) => ({ from, to, distance }))
-    };
+    return getDemoRouteNetwork();
   }
   if (path.startsWith("/auth/invitations/")) {
     fail(404, "This sample invitation link is not available in the browser demo.");
@@ -524,23 +494,8 @@ function postData(state, path, body, user) {
     window.localStorage.setItem(SESSION_KEY, newUser.id);
     return { user: newUser };
   }
-  if (path.startsWith("/algorithms/run")) {
-    const item = algorithms[body.algorithm];
-    if (!item) fail(400, "Choose one of the sample algorithms.");
-    return { ...{ algorithm: body.algorithm, unit: item.unit, complexity: item.complexity }, result: runAlgorithm(body.algorithm, body.input) };
-  }
   if (path === "/optimization/route") {
-    if (!routeVertices.includes(body.origin) || !routeVertices.includes(body.destination)) fail(400, "Choose an origin and destination from the sample network.");
-    const result = shortestPaths(routeVertices, routeEdges, body.origin);
-    const distance = result.distances.get(body.destination);
-    return {
-      source: "illustrative_demo_network",
-      networkAssumption: "Edge weights are sample distances, not live road distances or carrier quotes.",
-      origin: body.origin, destination: body.destination, route: result.paths.get(body.destination),
-      distance, estimatedCost: Number((distance * Number(body.costPerDistance ?? 1)).toFixed(2)),
-      costPerDistance: Number(body.costPerDistance ?? 1), unit: "sample distance units",
-      complexity: "Dijkstra: O((V + E) log V) using the demonstrated priority-queue approach."
-    };
+    return optimizeDemoRoute(body);
   }
   if (path === "/organization/invitations") {
     const invitation = { _id: nextId(state), organization: user.organization.id, organizationName: user.organization.name, email: body.email.trim().toLowerCase(), role: body.role, status: "pending", expiresAt: new Date(now + 7 * 86_400_000).toISOString(), invitationUrl: `${window.location.origin}/invite/demo-${Date.now()}` };
