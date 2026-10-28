@@ -66,10 +66,14 @@ async function request(method, path, body) {
     }
 
     if (!response.ok) {
-      // If server returned 5xx (500, 502, 503, 504) or database offline
-      if (response.status >= 500 && (path.startsWith("/auth/") || method === "GET")) {
+      // If server returned 5xx (500, 502, 503, 504) or database offline on Vercel
+      if (response.status >= 500) {
         console.warn(`API returned ${response.status}, falling back to local workspace mode for ${path}`);
-        return demoApi[method.toLowerCase()](path, body);
+        try {
+          return await demoApi[method.toLowerCase()](path, body);
+        } catch (demoErr) {
+          if (demoErr.response) throw demoErr;
+        }
       }
 
       // If login returned 401/404, check if credentials exist in local demo storage
@@ -88,12 +92,14 @@ async function request(method, path, body) {
 
     return { data, status: response.status };
   } catch (err) {
-    // If network error occurred (e.g. server down, fetch failed)
-    if (path.startsWith("/auth/") || method === "GET") {
-      console.warn("API unreachable, falling back to local workspace mode:", err.message);
-      return demoApi[method.toLowerCase()](path, body);
+    if (err.response) throw err;
+    // If network error occurred (e.g. server down, offline, fetch failed)
+    console.warn("API unreachable, falling back to local workspace mode:", err.message);
+    try {
+      return await demoApi[method.toLowerCase()](path, body);
+    } catch {
+      throw err;
     }
-    throw err;
   }
 }
 

@@ -106,12 +106,14 @@ export const login = asyncHandler(async (request, response) => {
   });
 });
 
-export const me = asyncHandler(async (request, response) => {
+export const getCurrentUser = asyncHandler(async (request, response) => {
   response.status(200).json({
     success: true,
     data: { user: presentUser(request.user) }
   });
 });
+
+export const me = getCurrentUser;
 
 export const logout = asyncHandler(async (_request, response) => {
   response.clearCookie(COOKIE_NAME, cookieOptions());

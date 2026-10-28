@@ -70,7 +70,7 @@ async function createSession(role, email, organizationName) {
 
 test("platform serves authenticated organization, catalog, analytics, route and admin APIs", async () => {
   const anonymous = request(app);
-  await anonymous.get("/api/algorithms").expect(401);
+  await anonymous.get("/api/organization").expect(401);
 
   const { agent, user } = await createSession(
     "manufacturer",
@@ -81,16 +81,7 @@ test("platform serves authenticated organization, catalog, analytics, route and 
   assert.equal(organization.body.data.organization.name, "Platform Test Organization");
   await agent.patch("/api/organization").send({ name: "Updated Test Organization" }).expect(200);
 
-  const catalog = await agent.get("/api/algorithms").expect(200);
-  assert.ok(catalog.body.data.algorithms["graph.dijkstra"]);
-  const output = await agent.post("/api/algorithms/run").send({
-    algorithm: "dp.knapsack01",
-    input: { items: [{ weight: 2, value: 4 }], capacity: 2 }
-  }).expect(200);
-  assert.equal(output.body.data.result.maxValue, 4);
-  await agent.post("/api/algorithms/run")
-    .send({ algorithm: "backtracking.nQueens", input: { n: 100 } })
-    .expect(400);
+  // Algorithm endpoints removed per project requirement
 
   const network = await agent.get("/api/optimization/network").expect(200);
   assert.equal(network.body.data.source, "illustrative_demo_network");

@@ -128,6 +128,7 @@ export const getDashboard = asyncHandler(async (request, response) => {
     data: {
       title: roleTitles[userRole] ?? "Operations Overview",
       role: userRole,
+      dataStatus: orders.length === 0 && shipments.length === 0 ? "Operational records have not been added yet." : "Operational records synchronized.",
       organization: {
         id: String(orgId),
         name: request.user.organization.name

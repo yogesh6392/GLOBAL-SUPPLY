@@ -26,6 +26,24 @@ async function ensureDatabaseConnection() {
 }
 
 export default async function handler(request, response) {
+  // Normalize request.url if Vercel serverless rewrite passed path in query or stripped prefix
+  if (request.url.startsWith("/api/[...path]") || request.url.startsWith("/api?")) {
+    const rawPath = request.query?.path;
+    const pathString = Array.isArray(rawPath) ? rawPath.join("/") : (rawPath || "");
+    const queryString = request.url.includes("?") ? request.url.slice(request.url.indexOf("?")) : "";
+    request.url = `/api/${pathString}${queryString}`.replace(/\/+/g, "/");
+  }
+
+  // Health check endpoint can be handled directly
+  if (request.url.startsWith("/api/health")) {
+    try {
+      await ensureDatabaseConnection();
+    } catch {
+      // Allow /api/health to return database: "disconnected" cleanly
+    }
+    return app(request, response);
+  }
+
   try {
     await ensureDatabaseConnection();
   } catch (error) {
