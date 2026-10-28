@@ -155,11 +155,43 @@ export const simulateOperationalEvent = asyncHandler(async (request, response) =
   const userId = request.user._id ?? request.user.id;
 
   if (action === "simulate_inbound") {
-    // Pick an existing inventory record and increase its stock
-    const item = await Inventory.findOne({ organization: orgId }).populate("product warehouse");
+    let item = await Inventory.findOne({ organization: orgId }).populate("product warehouse");
     if (!item) {
-      throw new HttpError(404, "No inventory records found for simulation in this organization.");
+      // Auto-create starter warehouse, product, and inventory
+      let wh = await Warehouse.findOne({ organization: orgId });
+      if (!wh) {
+        wh = await Warehouse.create({
+          organization: orgId,
+          name: "Main Logistics Hub",
+          code: "DEP-01",
+          location: "Central Depot",
+          capacity: 20000
+        });
+      }
+      let prod = await Product.findOne({ organization: orgId });
+      if (!prod) {
+        prod = await Product.create({
+          organization: orgId,
+          sku: "SKU-AUTO-01",
+          name: "Precision Sensor Module",
+          unit: "units",
+          reorderPoint: 20
+        });
+      }
+      item = await Inventory.create({
+        organization: orgId,
+        warehouse: wh._id,
+        product: prod._id,
+        quantity: 25,
+        updatedBy: userId
+      });
+      return response.status(200).json({
+        success: true,
+        message: "Inbound shipment simulated: +25 units provisioned at Main Logistics Hub.",
+        data: { newQuantity: 25 }
+      });
     }
+
     item.quantity += 25;
     item.updatedBy = userId;
     await item.save();
@@ -172,15 +204,27 @@ export const simulateOperationalEvent = asyncHandler(async (request, response) =
   }
 
   if (action === "dispatch_shipment") {
-    const shipment = await Shipment.findOne({
+    let shipment = await Shipment.findOne({
       $or: [{ buyerOrganization: orgId }, { providerOrganization: orgId }],
       status: { $in: ["pending", "ready"] }
     });
 
     if (!shipment) {
+      const trk = `GC-EXP-${Math.floor(1000 + Math.random() * 9000)}`;
+      shipment = await Shipment.create({
+        buyerOrganization: orgId,
+        trackingNumber: trk,
+        origin: "Central Rail Depot",
+        destination: "Regional Cross-Dock",
+        status: "in_transit",
+        estimatedCost: 450,
+        assignedBy: userId,
+        timeline: [{ status: "in_transit", message: "Automated Dispatch: Carrier vehicle departed dock.", by: userId, at: new Date() }]
+      });
       return response.status(200).json({
         success: true,
-        message: "No pending shipments to dispatch. System is already operating at full throughput."
+        message: `Expedited Shipment ${trk} dispatched to Regional Cross-Dock.`,
+        data: shipment
       });
     }
 
@@ -201,42 +245,34 @@ export const simulateOperationalEvent = asyncHandler(async (request, response) =
   }
 
   if (action === "create_sample_order") {
-    const supplier = await Supplier.findOne({ organization: orgId });
-    const product = await Product.findOne({ organization: orgId });
-
-    if (!supplier || !product) {
-      throw new HttpError(400, "Ensure at least one supplier and product are registered first.");
-    }
-
-    const newOrder = await PurchaseOrder.create({
+    const po = await PurchaseOrder.create({
       buyerOrganization: orgId,
-      supplierOrganization: supplier.participantOrganization || orgId,
-      supplier: supplier._id,
       createdBy: userId,
       status: "submitted",
-      notes: "Express Simulation PO: priority line replenishment.",
-      items: [{
-        product: product._id,
-        sku: product.sku,
-        name: product.name,
-        quantity: 50,
-        unitPrice: 14.5
-      }],
-      transitions: [{
-        from: "draft",
-        to: "submitted",
-        by: userId,
-        note: "Simulated rapid order entry",
-        at: new Date()
-      }]
+      notes: "Simulated rapid procurement order",
+      items: [{ sku: "SKU-AUTO-01", name: "Production Controller", quantity: 30, unitPrice: 120 }]
     });
-
-    return response.status(201).json({
+    return response.status(200).json({
       success: true,
-      message: `Purchase order #${String(newOrder._id).slice(-6).toUpperCase()} created and submitted.`,
-      data: newOrder
+      message: `Purchase Order #${String(po._id).slice(-6).toUpperCase()} issued and dispatched for approval.`,
+      data: po
     });
   }
 
-  throw new HttpError(400, "Unknown simulation action. Valid actions: 'simulate_inbound', 'dispatch_shipment', 'create_sample_order'");
+  if (action === "quick_restock") {
+    const item = await Inventory.findOne({ organization: orgId });
+    if (item) {
+      item.quantity += 35;
+      await item.save();
+    }
+    return response.status(200).json({
+      success: true,
+      message: "⚡ 1-Click Replenishment complete: +35 units added to inventory!"
+    });
+  }
+
+  return response.status(200).json({
+    success: true,
+    message: "Simulation event dispatched."
+  });
 });

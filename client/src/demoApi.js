@@ -378,12 +378,234 @@ export function optimizeDemoRoute({ origin, destination, costPerDistance = 1 }) 
   };
 }
 
+
+function ensureStarterOperationsForOrg(state, organizationId, userId, orgName) {
+  if (!organizationId) return;
+  const existingWarehouses = state.warehouses.filter((w) => w.organization === organizationId);
+  if (existingWarehouses.length > 0) return;
+
+  const w1Id = nextId(state);
+  const w1 = {
+    _id: w1Id,
+    organization: organizationId,
+    name: `${orgName} Central Depot`,
+    code: "DEP-01",
+    location: "Chicago Logistics Gateway",
+    address: "4200 Logistics Pkwy, Chicago, IL",
+    capacity: 25000,
+    active: true,
+    createdAt: date(14)
+  };
+  state.warehouses.push(w1);
+
+  const w2Id = nextId(state);
+  const w2 = {
+    _id: w2Id,
+    organization: organizationId,
+    name: `${orgName} Cross-Dock Terminal`,
+    code: "CRX-02",
+    location: "Dallas Freight Terminal",
+    address: "1850 Airfreight Way, Dallas, TX",
+    capacity: 15000,
+    active: true,
+    createdAt: date(10)
+  };
+  state.warehouses.push(w2);
+
+  // Products
+  const p1Id = nextId(state);
+  const p1 = {
+    _id: p1Id,
+    organization: organizationId,
+    sku: "SKU-SENS-4001",
+    name: "Industrial Sensor Hub v4",
+    description: "Multi-parameter telemetry unit with IP67 enclosure",
+    category: "Telemetry & IoT",
+    unit: "units",
+    reorderPoint: 20,
+    active: true,
+    createdAt: date(20)
+  };
+  const p2Id = nextId(state);
+  const p2 = {
+    _id: p2Id,
+    organization: organizationId,
+    sku: "SKU-ACT-2088",
+    name: "Brushless Servo Actuator",
+    description: "High-torque precision positioning module for automated lines",
+    category: "Motors & Drives",
+    unit: "units",
+    reorderPoint: 15,
+    active: true,
+    createdAt: date(18)
+  };
+  const p3Id = nextId(state);
+  const p3 = {
+    _id: p3Id,
+    organization: organizationId,
+    sku: "SKU-MOD-9102",
+    name: "Opto-Isolated Controller Gateway",
+    description: "Modbus / CAN-bus interface board with optocoupler protection",
+    category: "Circuit Assemblies",
+    unit: "units",
+    reorderPoint: 30,
+    active: true,
+    createdAt: date(15)
+  };
+  state.products.push(p1, p2, p3);
+
+  // Inventory: 1 healthy (48), 1 low stock (7 < reorderPoint 15 to make alert live and interactive!), 1 cross-dock (64)
+  const inv1 = {
+    _id: nextId(state),
+    organization: organizationId,
+    warehouse: w1._id,
+    product: p1._id,
+    quantity: 48,
+    updatedBy: userId,
+    updatedAt: date(1)
+  };
+  const inv2 = {
+    _id: nextId(state),
+    organization: organizationId,
+    warehouse: w1._id,
+    product: p2._id,
+    quantity: 7,
+    updatedBy: userId,
+    updatedAt: date(2)
+  };
+  const inv3 = {
+    _id: nextId(state),
+    organization: organizationId,
+    warehouse: w2._id,
+    product: p3._id,
+    quantity: 64,
+    updatedBy: userId,
+    updatedAt: date()
+  };
+  state.inventory.push(inv1, inv2, inv3);
+
+  // Partner supplier
+  const partnerSupplier = {
+    _id: nextId(state),
+    organization: organizationId,
+    name: "Precision Micro Systems",
+    contactName: "Elena Rostova",
+    email: "erostova@precisionmicro.demo",
+    phone: "+1 (555) 782-9901",
+    address: "710 Industrial Ave, Austin, TX",
+    rating: 4.9,
+    active: true,
+    createdAt: date(30)
+  };
+  state.suppliers.push(partnerSupplier);
+
+  const otherOrgId = state.organizations[0]?.id || organizationId;
+
+  // Purchase Orders
+  const po1 = {
+    _id: nextId(state),
+    buyerOrganization: organizationId,
+    supplierOrganization: otherOrgId,
+    supplier: partnerSupplier,
+    createdBy: userId,
+    status: "confirmed",
+    notes: "Replenishment batch · High-priority assembly components",
+    items: [{ product: p1._id, sku: p1.sku, name: p1.name, quantity: 24, unitPrice: 145.00 }],
+    transitions: [
+      { from: "draft", to: "submitted", by: userId, note: "Order placed", at: date(3) },
+      { from: "submitted", to: "approved", by: userId, note: "Approved by finance", at: date(2) },
+      { from: "approved", to: "confirmed", by: userId, note: "Confirmed by supplier", at: date(1) }
+    ],
+    createdAt: date(3),
+    updatedAt: date(1)
+  };
+  const po2 = {
+    _id: nextId(state),
+    buyerOrganization: organizationId,
+    supplierOrganization: otherOrgId,
+    supplier: partnerSupplier,
+    createdBy: userId,
+    status: "submitted",
+    notes: "Production run batch · Pending carrier slot reservation",
+    items: [{ product: p2._id, sku: p2.sku, name: p2.name, quantity: 18, unitPrice: 280.00 }],
+    transitions: [
+      { from: "draft", to: "submitted", by: userId, note: "Submitted for review", at: date(1) }
+    ],
+    createdAt: date(1),
+    updatedAt: date(1)
+  };
+  const po3 = {
+    _id: nextId(state),
+    buyerOrganization: organizationId,
+    supplierOrganization: otherOrgId,
+    supplier: partnerSupplier,
+    createdBy: userId,
+    status: "draft",
+    notes: "Draft buffer reserve for automated assembly cell",
+    items: [{ product: p3._id, sku: p3.sku, name: p3.name, quantity: 35, unitPrice: 92.50 }],
+    transitions: [],
+    createdAt: date(0),
+    updatedAt: date(0)
+  };
+  state.purchaseOrders.push(po1, po2, po3);
+
+  // Shipments
+  const trk1 = `GC-TRK-${Math.floor(1000 + Math.random() * 9000)}`;
+  const sh1 = {
+    _id: nextId(state),
+    buyerOrganization: organizationId,
+    supplierOrganization: otherOrgId,
+    providerOrganization: state.organizations[3]?.id || otherOrgId,
+    purchaseOrder: po1._id,
+    assignedBy: userId,
+    trackingNumber: trk1,
+    origin: "Chicago Logistics Gateway",
+    destination: `${orgName} Central Depot`,
+    expectedDelivery: date(-1),
+    estimatedCost: 380.00,
+    status: "in_transit",
+    createdAt: date(2),
+    actualDelivery: null,
+    timeline: [
+      { status: "pending", message: "Consignment created with automated waybill.", by: userId, at: date(2) },
+      { status: "ready", message: "Dock verified and palletized for carrier pickup.", by: userId, at: date(1) },
+      { status: "in_transit", message: `Carrier dispatched: ${trk1} en route via Interstate 55.`, by: userId, at: date() }
+    ]
+  };
+  const trk2 = `GC-TRK-${Math.floor(1000 + Math.random() * 9000)}`;
+  const sh2 = {
+    _id: nextId(state),
+    buyerOrganization: organizationId,
+    supplierOrganization: otherOrgId,
+    providerOrganization: state.organizations[3]?.id || otherOrgId,
+    purchaseOrder: po1._id,
+    assignedBy: userId,
+    trackingNumber: trk2,
+    origin: "Detroit Assembly Hub",
+    destination: "Dallas Freight Terminal",
+    expectedDelivery: date(4),
+    estimatedCost: 510.00,
+    status: "delivered",
+    createdAt: date(7),
+    actualDelivery: date(3),
+    timeline: [
+      { status: "pending", message: "Consignment booked.", by: userId, at: date(7) },
+      { status: "in_transit", message: "Departed regional hub.", by: userId, at: date(5) },
+      { status: "delivered", message: "Signed and accepted at bay 4.", by: userId, at: date(3) }
+    ]
+  };
+  state.shipments.push(sh1, sh2);
+}
+
 function getData(state, path, params, user) {
   if (path === "/auth/me") {
     if (!user) fail(401, "No demo account is signed in.");
     return { user };
   }
   if (path === "/dashboard") {
+    if (user && user.organization) {
+      ensureStarterOperationsForOrg(state, user.organization.id, user.id, user.organization.name || "Workspace");
+    }
     const orders = visibleOrders(state, user);
     const shipments = visibleShipments(state, user);
     const products = state.products.filter((p) => p.organization === user.organization.id);
@@ -546,6 +768,137 @@ function getData(state, path, params, user) {
 }
 
 function postData(state, path, body, user) {
+  if (path === "/dashboard/simulate") {
+    const { action } = body || {};
+    if (user && user.organization) {
+      ensureStarterOperationsForOrg(state, user.organization.id, user.id, user.organization.name || "Workspace");
+    }
+
+    if (action === "simulate_inbound") {
+      let item = state.inventory.find((i) => i.organization === user.organization.id);
+      if (!item) {
+        ensureStarterOperationsForOrg(state, user.organization.id, user.id, user.organization.name);
+        item = state.inventory.find((i) => i.organization === user.organization.id) || state.inventory[0];
+      }
+      item.quantity += 25;
+      item.updatedAt = date();
+      const product = populateProduct(state, item.product);
+      const warehouse = populateWarehouse(state, item.warehouse);
+
+      state.movements.unshift({
+        _id: nextId(state),
+        organization: user.organization.id,
+        warehouse: warehouse._id || item.warehouse,
+        product: product._id || item.product,
+        direction: "in",
+        quantity: 25,
+        reason: "Simulated Inbound Consignment receipt (+25)",
+        performedBy: user.id,
+        createdAt: date()
+      });
+
+      return {
+        success: true,
+        message: `Inbound Stock Verified: +25 units added to ${product.name || "SKU"} at ${warehouse.name || "Depot"}. New stock: ${item.quantity}.`,
+        quantity: item.quantity
+      };
+    }
+
+    if (action === "dispatch_shipment") {
+      const tracking = `GC-EXP-${Math.floor(1000 + Math.random() * 9000)}`;
+      const warehouse = state.warehouses.find((w) => w.organization === user.organization.id);
+      const newShipment = {
+        _id: nextId(state),
+        buyerOrganization: user.organization.id,
+        supplierOrganization: state.organizations[0]?.id || user.organization.id,
+        providerOrganization: state.organizations[3]?.id || user.organization.id,
+        purchaseOrder: state.purchaseOrders.find((o) => o.buyerOrganization === user.organization.id)?._id,
+        trackingNumber: tracking,
+        origin: warehouse?.name || "Central Freight Gateway",
+        destination: "Global Express Cross-Dock",
+        expectedDelivery: date(-2),
+        estimatedCost: 440.00,
+        status: "in_transit",
+        createdAt: date(),
+        actualDelivery: null,
+        timeline: [
+          { status: "pending", message: "Automated booking confirmed via Mission Control.", by: user.id, at: date() },
+          { status: "in_transit", message: `Carrier underway. Consignment tracking: ${tracking}.`, by: user.id, at: date() }
+        ]
+      };
+      state.shipments.unshift(newShipment);
+
+      return {
+        success: true,
+        message: `Shipment Dispatched: Consignment ${tracking} is now in transit with live GPS tracking.`,
+        shipment: newShipment
+      };
+    }
+
+    if (action === "create_sample_order") {
+      const poNum = Math.floor(1000 + Math.random() * 9000);
+      const product = state.products.find((p) => p.organization === user.organization.id) || state.products[0];
+      const newOrder = {
+        _id: nextId(state),
+        buyerOrganization: user.organization.id,
+        supplierOrganization: state.organizations[1]?.id || user.organization.id,
+        supplier: state.suppliers[0],
+        createdBy: user.id,
+        status: "submitted",
+        notes: `Urgent production procurement batch #PO-${poNum}`,
+        items: [{
+          product: product?._id,
+          sku: product?.sku || "SKU-AUTO-01",
+          name: product?.name || "Precision Component Assembly",
+          quantity: 40,
+          unitPrice: 165.00
+        }],
+        transitions: [
+          { from: "draft", to: "submitted", by: user.id, note: "Fast-issued from Mission Control simulator", at: date() }
+        ],
+        createdAt: date(),
+        updatedAt: date()
+      };
+      state.purchaseOrders.unshift(newOrder);
+
+      return {
+        success: true,
+        message: `Purchase Order #PO-${poNum} ($6,600.00) issued and submitted for supplier confirmation.`,
+        order: newOrder
+      };
+    }
+
+    if (action === "quick_restock") {
+      const lowStockProduct = state.products.find((p) => p.organization === user.organization.id && p.sku === "SKU-ACT-2088") || state.products[0];
+      const inv = state.inventory.find((i) => (i.product?._id || i.product) === lowStockProduct?._id);
+      if (inv) {
+        inv.quantity += 35;
+        inv.updatedAt = date();
+      }
+      return {
+        success: true,
+        message: `⚡ 1-Click Replenishment complete: +35 units received for ${lowStockProduct?.name || "SKU"}. Stock restored to safe levels!`,
+        product: lowStockProduct
+      };
+    }
+
+    if (action === "simulate_telemetry") {
+      const events = [
+        "📡 Transponder #8841 verified on Corridor I-80 · Temperature 18.2°C (Nominal)",
+        "📦 Automated Optical Inspection: Pallet seal intact at Central Depot Bay 4",
+        "⚡ RFID Gate Reader: 24 units checked in for Assembly Line #2",
+        "🚢 Maritime feeder vessel berthing at Harbor Terminal Gate 7"
+      ];
+      const picked = events[Math.floor(Math.random() * events.length)];
+      return {
+        success: true,
+        message: picked
+      };
+    }
+
+    return { success: true, message: "Simulation event executed." };
+  }
+
   if (path === "/auth/login") {
     const email = body.email?.trim().toLowerCase();
     let demoUser = state.users.find((item) => item.email === email && item.active);
