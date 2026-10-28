@@ -3,6 +3,8 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import ThemeToggle from "../components/ThemeToggle";
 import { useAuth } from "../AuthContext";
 import { DEMO_ACCOUNTS, DEMO_PASSWORD } from "../demoApi";
+import { useTheme } from "../ThemeContext";
+import GooeyNav from "../components/GooeyNav";
 
 /* ── Live ticker data ─────────────────────────────────────────────────── */
 const BASE_METRICS = [
@@ -221,7 +223,7 @@ function HeroVisual() {
   };
 
   return (
-    <div className="hero-visual" aria-label="Interactive supply-chain network control center">
+    <div id="control-tower" className="hero-visual" aria-label="Interactive supply-chain network control center">
       <div className={`visual-glow ${scenario !== "normal" ? `visual-glow-${scenario}` : ""}`} />
 
       {/* Interactive Scenario Bar */}
@@ -378,7 +380,7 @@ function InteractiveRoiCalculator() {
   }, [annualDelayed]);
 
   return (
-    <section className="roi-calculator-section">
+    <section id="roi-calculator" className="roi-calculator-section">
       <div className="roi-header">
         <span className="eyebrow">OPERATIONAL VALUE ENGINE</span>
         <h2>Calculate your annual supply chain savings.</h2>
@@ -511,26 +513,34 @@ const SHOWCASE_TABS = [
 
 function InteractiveFeatureShowcase() {
   const [activeTabId, setActiveTabId] = useState("orders");
-  const tab = SHOWCASE_TABS.find((t) => t.id === activeTabId) || SHOWCASE_TABS[0];
+  const { theme } = useTheme();
+  const activeIndex = SHOWCASE_TABS.findIndex((t) => t.id === activeTabId);
+  const tab = SHOWCASE_TABS[activeIndex >= 0 ? activeIndex : 0];
+
+  const gooeyItems = useMemo(() => SHOWCASE_TABS.map((t) => ({
+    label: t.title.replace(/^\d+\.\s*/, "")
+  })), []);
 
   return (
-    <section className="interactive-showcase-section">
+    <section id="workflows" className="interactive-showcase-section">
       <div className="section-heading">
         <span className="eyebrow">STEP-BY-STEP WORKFLOWS</span>
         <h2>Designed for how modern teams operate.</h2>
       </div>
 
-      <div className="showcase-nav-row">
-        {SHOWCASE_TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            className={`showcase-tab-btn ${activeTabId === t.id ? "showcase-tab-active" : ""}`}
-            onClick={() => setActiveTabId(t.id)}
-          >
-            <span aria-hidden="true">{t.icon}</span> {t.title}
-          </button>
-        ))}
+      <div className="showcase-gooey-nav-wrap">
+        <GooeyNav
+          items={gooeyItems}
+          activeIndex={activeIndex >= 0 ? activeIndex : 0}
+          onChange={(index) => setActiveTabId(SHOWCASE_TABS[index].id)}
+          theme={theme}
+          size="md"
+          color="#2563eb"
+          activeTextColor="#ffffff"
+          particleCount={14}
+          spread={48}
+          animationTime={500}
+        />
       </div>
 
       <div className="showcase-display-card">
@@ -633,7 +643,7 @@ function FaqAccordion() {
   const [openIdx, setOpenIdx] = useState(0);
 
   return (
-    <section className="faq-section">
+    <section id="faq" className="faq-section">
       <div className="section-heading">
         <span className="eyebrow">COMMON QUESTIONS</span>
         <h2>Everything you need to know.</h2>
@@ -785,9 +795,18 @@ function TypewriterPhrase() {
 }
 
 /* ── Landing Page Main ───────────────────────────────────────────────── */
+const LANDING_NAV_ITEMS = [
+  { label: "Overview", href: "#overview" },
+  { label: "Control Tower", href: "#control-tower" },
+  { label: "Workflows", href: "#workflows" },
+  { label: "ROI Engine", href: "#roi-calculator" },
+  { label: "FAQ", href: "#faq" }
+];
+
 export default function LandingPage() {
   const [heroVisible, setHeroVisible] = useState(false);
   const [showDemo, setShowDemo] = useState(false);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const t = setTimeout(() => setHeroVisible(true), 80);
@@ -805,6 +824,19 @@ export default function LandingPage() {
           <span className="brand-mark">G</span>
           <span>Global<span className="brand-light">Chain</span></span>
         </a>
+        <div className="landing-nav-center">
+          <GooeyNav
+            items={LANDING_NAV_ITEMS}
+            initialActiveIndex={0}
+            theme={theme}
+            size="sm"
+            color="#2563eb"
+            activeTextColor="#ffffff"
+            particleCount={12}
+            spread={36}
+            animationTime={420}
+          />
+        </div>
         <div className="landing-actions">
           <ThemeToggle />
           <button
@@ -826,7 +858,7 @@ export default function LandingPage() {
         <LiveDispatchStream />
 
         {/* Hero Section */}
-        <section className={`hero ${heroVisible ? "hero-visible" : ""}`}>
+        <section id="overview" className={`hero ${heroVisible ? "hero-visible" : ""}`}>
           <div className="hero-copy">
             <div className="eyebrow">
               <span className="eyebrow-dot" />

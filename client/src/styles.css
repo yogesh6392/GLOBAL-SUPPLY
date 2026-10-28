@@ -2541,3 +2541,24 @@ html[data-theme="dark"] .dash-activity-details small { color: #8fa5bc; }
   .roi-sub-results { grid-template-columns: 1fr; }
   .showcase-nav-row { flex-wrap: wrap; }
 }
+
+/* ── GooeyNav Container Layouts ──────────────────────────────────────── */
+.landing-nav-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 1040px) {
+  .landing-nav-center {
+    display: none;
+  }
+}
+
+.showcase-gooey-nav-wrap {
+  margin: 20px 0 24px;
+  display: flex;
+  justify-content: flex-start;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
