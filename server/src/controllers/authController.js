@@ -4,6 +4,7 @@ import Organization from "../models/Organization.js";
 import User from "../models/User.js";
 import HttpError from "../utils/HttpError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { getConfig } from "../config/env.js";
 
 const TOKEN_LIFETIME_MS = 8 * 60 * 60 * 1000;
 const COOKIE_NAME = "auth_token";
@@ -18,7 +19,8 @@ function cookieOptions() {
 }
 
 function createToken(userId) {
-  return jwt.sign({ sub: userId }, process.env.JWT_SECRET, {
+  const secret = getConfig().jwtSecret;
+  return jwt.sign({ sub: userId }, secret, {
     algorithm: "HS256",
     expiresIn: "8h",
     issuer: "supply-chain-platform",
@@ -41,6 +43,9 @@ function presentUser(user) {
 
 export const register = asyncHandler(async (request, response) => {
   const { fullName, email, password, role, organizationName } = request.body;
+  if (!fullName || !email || !password || !role || !organizationName) {
+    throw new HttpError(400, "Please provide your name, email, organization name, role, and password.");
+  }
   if (await User.exists({ email: email.trim().toLowerCase() })) {
     throw new HttpError(409, "An account with this email address already exists.");
   }
@@ -79,6 +84,9 @@ export const register = asyncHandler(async (request, response) => {
 
 export const login = asyncHandler(async (request, response) => {
   const { email, password } = request.body;
+  if (!email || !password) {
+    throw new HttpError(400, "Please enter your email and password.");
+  }
   const user = await User.findOne({ email: email.trim().toLowerCase() })
     .select("+passwordHash")
     .populate("organization", "name");
@@ -98,14 +106,17 @@ export const login = asyncHandler(async (request, response) => {
   });
 });
 
-export const logout = (_request, response) => {
-  response.clearCookie(COOKIE_NAME, cookieOptions());
-  response.status(200).json({ success: true, message: "You are signed out." });
-};
-
-export const getCurrentUser = asyncHandler(async (request, response) => {
+export const me = asyncHandler(async (request, response) => {
   response.status(200).json({
     success: true,
     data: { user: presentUser(request.user) }
+  });
+});
+
+export const logout = asyncHandler(async (_request, response) => {
+  response.clearCookie(COOKIE_NAME, cookieOptions());
+  response.status(200).json({
+    success: true,
+    message: "You are signed out."
   });
 });

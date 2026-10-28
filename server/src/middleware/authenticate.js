@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import HttpError from "../utils/HttpError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { getConfig } from "../config/env.js";
 
 export const authenticate = asyncHandler(async (request, _response, next) => {
   const authorization = request.get("authorization");
@@ -13,9 +14,10 @@ export const authenticate = asyncHandler(async (request, _response, next) => {
     throw new HttpError(401, "Please sign in to continue.");
   }
 
+  const secret = getConfig().jwtSecret;
   let claims;
   try {
-    claims = jwt.verify(token, process.env.JWT_SECRET, {
+    claims = jwt.verify(token, secret, {
       algorithms: ["HS256"],
       issuer: "supply-chain-platform",
       audience: "supply-chain-platform-users"

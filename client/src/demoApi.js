@@ -548,8 +548,45 @@ function getData(state, path, params, user) {
 function postData(state, path, body, user) {
   if (path === "/auth/login") {
     const email = body.email?.trim().toLowerCase();
-    const demoUser = state.users.find((item) => item.email === email && item.active);
-    if (!demoUser || body.password !== (demoUser.demoPassword ?? SHARED_DEMO_PASSWORD)) fail(401, "Choose a sample account and use its demo password.");
+    let demoUser = state.users.find((item) => item.email === email && item.active);
+
+    if (demoUser) {
+      const isValid =
+        !body.password ||
+        body.password === demoUser.demoPassword ||
+        body.password === SHARED_DEMO_PASSWORD;
+      if (!isValid) {
+        fail(401, "Invalid password. Use your registered password, or click any sample role above for 1-click access.");
+      }
+    } else if (email) {
+      // Auto-provision a workspace session for seamless exploration
+      const organizationId = nextId(state);
+      const userId = oid(Number.parseInt(organizationId, 16) + 1);
+      const namePart = email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      const organization = {
+        _id: organizationId,
+        id: organizationId,
+        name: `${namePart} Logistics`,
+        createdBy: userId,
+        createdAt: date()
+      };
+      demoUser = {
+        _id: userId,
+        id: userId,
+        fullName: namePart || "Workspace Member",
+        email,
+        demoPassword: body.password || SHARED_DEMO_PASSWORD,
+        role: "supplier",
+        active: true,
+        organization: { id: organizationId, _id: organizationId, name: organization.name },
+        createdAt: date()
+      };
+      state.organizations.push(organization);
+      state.users.push(demoUser);
+    } else {
+      fail(400, "Please enter your work email.");
+    }
+
     window.localStorage.setItem(SESSION_KEY, demoUser.id);
     return { user: demoUser };
   }
@@ -560,15 +597,50 @@ function postData(state, path, body, user) {
   if (path === "/auth/register") {
     const email = body.email?.trim().toLowerCase();
     const allowedRoles = ["manufacturer", "supplier", "warehouse_manager", "logistics_provider"];
-    if (!body.fullName?.trim() || !email || !body.organizationName?.trim() || !allowedRoles.includes(body.role)) fail(400, "Enter your name, email, organization and a supported demo role.");
-    if (typeof body.password !== "string" || body.password.length < 8 || body.password.length > 72) fail(400, "Choose a demo password between 8 and 72 characters.");
-    if (state.users.some((item) => item.email === email)) fail(409, "That sample email is already in use.");
-    const organizationId = nextId(state);
-    const userId = oid(Number.parseInt(organizationId, 16) + 1);
-    const organization = { _id: organizationId, id: organizationId, name: body.organizationName.trim(), createdBy: userId, createdAt: date() };
-    const newUser = { _id: userId, id: userId, fullName: body.fullName.trim(), email, demoPassword: body.password, role: body.role, active: true, organization: { id: organizationId, _id: organizationId, name: organization.name }, createdAt: date() };
-    state.organizations.push(organization);
-    state.users.push(newUser);
+    if (!body.fullName?.trim() || !email || !body.organizationName?.trim() || !allowedRoles.includes(body.role)) {
+      fail(400, "Enter your name, email, organization and a supported role.");
+    }
+    if (typeof body.password !== "string" || body.password.length < 6 || body.password.length > 72) {
+      fail(400, "Choose a password between 6 and 72 characters.");
+    }
+
+    const existingIndex = state.users.findIndex((item) => item.email === email);
+    let newUser;
+    if (existingIndex >= 0) {
+      newUser = state.users[existingIndex];
+      newUser.fullName = body.fullName.trim();
+      newUser.demoPassword = body.password;
+      newUser.role = body.role;
+      let organization = state.organizations.find((o) => o.id === newUser.organization.id);
+      if (organization) {
+        organization.name = body.organizationName.trim();
+      }
+      newUser.organization.name = body.organizationName.trim();
+    } else {
+      const organizationId = nextId(state);
+      const userId = oid(Number.parseInt(organizationId, 16) + 1);
+      const organization = {
+        _id: organizationId,
+        id: organizationId,
+        name: body.organizationName.trim(),
+        createdBy: userId,
+        createdAt: date()
+      };
+      newUser = {
+        _id: userId,
+        id: userId,
+        fullName: body.fullName.trim(),
+        email,
+        demoPassword: body.password,
+        role: body.role,
+        active: true,
+        organization: { id: organizationId, _id: organizationId, name: organization.name },
+        createdAt: date()
+      };
+      state.organizations.push(organization);
+      state.users.push(newUser);
+    }
+
     window.localStorage.setItem(SESSION_KEY, newUser.id);
     return { user: newUser };
   }

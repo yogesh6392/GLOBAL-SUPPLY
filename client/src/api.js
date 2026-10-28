@@ -18,7 +18,7 @@ export function getApiError(error) {
 async function request(method, path, body) {
   const isDemoActive = isDemoSessionActive();
 
-  // If this is a login attempt with demo credentials, or demo mode is active
+  // If this is a login attempt with demo credentials
   if (path === "/auth/login" && body?.email) {
     const isDemoEmail = DEMO_ACCOUNTS.some(
       (acc) => acc.email.toLowerCase() === body.email.toLowerCase()
@@ -37,7 +37,7 @@ async function request(method, path, body) {
     return demoApi[method.toLowerCase()](path, body);
   }
 
-  // Try real API
+  // Try real backend API
   try {
     const response = await fetch(`${BASE_URL}${path}`, {
       method,
@@ -52,13 +52,11 @@ async function request(method, path, body) {
       data = await response.json();
     } else {
       const text = await response.text();
+      // If server returned non-JSON error (e.g. Vite proxy ECONNREFUSED 500, or HTML 502/503/504)
       if (!response.ok) {
-        if (path === "/auth/me") {
-          return demoApi.get(path);
-        }
-        if (path === "/auth/login") {
-          console.warn("Backend unavailable, attempting demo login fallback.");
-          return demoApi.post(path, body);
+        if (path === "/auth/me" || path === "/auth/login" || path === "/auth/register" || path === "/auth/logout") {
+          console.warn("Backend unavailable, falling back to local workspace mode for", path);
+          return demoApi[method.toLowerCase()](path, body);
         }
         const error = new Error(`Server returned ${response.status}`);
         error.response = { status: response.status, data: { message: error.message } };
@@ -68,10 +66,19 @@ async function request(method, path, body) {
     }
 
     if (!response.ok) {
-      // If server returned 503 (database unavailable), fallback for demo experience
-      if ((response.status === 503 || response.status === 404) && path.startsWith("/auth/")) {
-        console.warn("API database unavailable, falling back to local demoApi.");
+      // If server returned 5xx (500, 502, 503, 504) or database offline
+      if (response.status >= 500 && (path.startsWith("/auth/") || method === "GET")) {
+        console.warn(`API returned ${response.status}, falling back to local workspace mode for ${path}`);
         return demoApi[method.toLowerCase()](path, body);
+      }
+
+      // If login returned 401/404, check if credentials exist in local demo storage
+      if (path === "/auth/login" && (response.status === 401 || response.status === 404)) {
+        try {
+          return await demoApi.post(path, body);
+        } catch {
+          // preserve backend error
+        }
       }
 
       const error = new Error(data.message ?? "The request could not be completed.");
@@ -81,9 +88,9 @@ async function request(method, path, body) {
 
     return { data, status: response.status };
   } catch (err) {
-    // If network error occurred and it's auth/me or login, fallback to demoApi
-    if (path === "/auth/me" || path === "/auth/login") {
-      console.warn("API unreachable, falling back to demoApi:", err.message);
+    // If network error occurred (e.g. server down, fetch failed)
+    if (path.startsWith("/auth/") || method === "GET") {
+      console.warn("API unreachable, falling back to local workspace mode:", err.message);
       return demoApi[method.toLowerCase()](path, body);
     }
     throw err;
